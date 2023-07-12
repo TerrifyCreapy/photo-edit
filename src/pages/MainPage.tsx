@@ -30,6 +30,7 @@ const MainPage: FC<IMainPage> = ({ setFile }) => {
             !e.dataTransfer.files[0].type.startsWith("image")
         )
             return;
+        console.log(e.dataTransfer.files[0]);
         setDrag(false);
         setFile(e.dataTransfer.files[0]);
     }
