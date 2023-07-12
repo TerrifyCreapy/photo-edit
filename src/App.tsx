@@ -1,10 +1,13 @@
 import {FC} from "react";
+import { Routes } from "react-router-dom";
+import { mapRoutes } from "./utils/mapRoutes";
+import { routes } from "./routes";
 
-function App() {
+const App: FC = () => {
   return (
-    <div className="App">
-      Init
-    </div>
+      <Routes>
+        {mapRoutes(routes)}
+      </Routes>
   );
 }
 
