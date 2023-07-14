@@ -72,6 +72,16 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
         }
     }, [brightness, rgb, canvasRef.current]);
 
+    const [opened, setOpened] = useState<boolean>(false);
+
+    function onClose() {
+        setOpened(false);
+    }
+
+    function onOpen() {
+        setOpened(true);
+    }
+
     return (
         <>
             <AppBar position="static">
@@ -171,7 +181,8 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
                     {params.get("crop") && 
                         <>
                             <Slider min={1} max={20} value={zoom} onChange={(e: any) => setZoom(+e.target.value)}/>
-                            <ImgDialog croppedAreaPixels={croppedAreaPixels} img={URL.createObjectURL(file)}/>
+                            <Button onClick={onOpen}>Просмотреть изображение</Button>
+                            {opened && <ImgDialog croppedAreaPixels={croppedAreaPixels} onClose={onClose} img={URL.createObjectURL(file)}/>}
                         </>
                         
                     }
