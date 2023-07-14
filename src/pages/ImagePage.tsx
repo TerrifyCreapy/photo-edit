@@ -7,10 +7,13 @@ import {
     Typography,
     IconButton,
     Button,
+    Link,
 } from "@mui/material";
-import { FC, useRef, useEffect, useState } from "react";
+import { FC, useRef, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import ColorsSlider from "../components/ColorsSlider";
+import ImageCrop from "../components/ImageCrop";
+import ImgDialog from "../components/ImgDialog";
 
 interface IImagePage {
     file: File;
@@ -22,13 +25,28 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
     const [brightness, setBrightness] = useState<number>(100);
     const [rgb, setRgb] = useState<any>({ r: 255, g: 255, b: 255 });
 
-    useEffect(() => {
-        canvasRef.current.style.display = "block";
-        canvasRef.current.style.margin = "0 auto";
-    }, []);
+    const [img, setImg] = useState<string|null>(null);
+
+    
 
     useEffect(() => {
-        if (canvasRef) {
+        if(canvasRef.current!==null && canvasRef.current.style) {
+            canvasRef.current.style.display = "block";
+            canvasRef.current.style.margin = "0 auto";
+        }
+        
+    }, [canvasRef.current]);
+
+
+    const [crop, setCrop] = useState({ x: 0, y: 0 })
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, [])
+
+    useEffect(() => {
+        if (canvasRef.current!== null && canvasRef.current.getContext) {
             const context = canvasRef.current.getContext("2d");
             if (context) {
                 const image = new Image();
@@ -52,7 +70,7 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
                 };
             }
         }
-    }, [brightness, rgb]);
+    }, [brightness, rgb, canvasRef.current]);
 
     return (
         <>
@@ -77,6 +95,12 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
                         onClick={() => setSearchParams({ color: "true" })}
                     >
                         Color
+                    </Button>
+                    <Button
+                        sx={{ color: "black" }}
+                        onClick={() => setSearchParams({ crop: "true" })}
+                    >
+                        Crop
                     </Button>
                 </Toolbar>
             </AppBar>
@@ -107,10 +131,11 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
                             padding: 2,
                         }}
                     >
-                        <canvas
+                        {!params.get("crop") && <canvas
                             style={{ maxWidth: "100%", maxHeight: "80%" }}
                             ref={canvasRef}
-                        ></canvas>
+                        ></canvas>}
+                        {params.get("crop") && <ImageCrop zoom={zoom} crop={crop} onCropComplete={onCropComplete} setCrop={setCrop} src={URL.createObjectURL(file)}/>}
                         {params.get("color") && (
                             <ColorsSlider
                                 rgb={rgb}
@@ -141,7 +166,15 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
                                 }
                             />
                         )}
+                        
                     </Card>
+                    {params.get("crop") && 
+                        <>
+                            <Slider min={1} max={20} value={zoom} onChange={(e: any) => setZoom(+e.target.value)}/>
+                            <ImgDialog croppedAreaPixels={croppedAreaPixels} img={URL.createObjectURL(file)}/>
+                        </>
+                        
+                    }
                 </Grid>
             </Grid>
         </>
