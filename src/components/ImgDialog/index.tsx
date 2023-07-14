@@ -37,6 +37,7 @@ const ImgDialog: FC<IImgDialog> = ({croppedAreaPixels, img, onClose}) => {
             spacing={0}
             alignItems="center"
             justifyContent="center"
+            onClick={onClose}
         >
             <Grid item sx={{}}>
                 <canvas ref={canvasRef} onClick={onClose}></canvas>

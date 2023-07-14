@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { observer } from "mobx-react-lite";
-import MainPage from "./MainPage";
-import ImagePage from "./ImagePage";
+import ImageUpload from "../components/ImageUpload";
 import useStore from "../hooks/useStore";
+import ImageEditor from "../components/ImageEditor";
 
 const LayoutPage: FC = () => {
     const { fileStore } = useStore();
@@ -12,9 +12,9 @@ const LayoutPage: FC = () => {
     }
 
     return !fileStore.isUploaded ? (
-        <MainPage setFile={setFile} />
+        <ImageUpload setFile={setFile}/>
     ) : (
-        <ImagePage file={fileStore.file} />
+        <ImageEditor file={fileStore.file} />
     );
 };
 export default observer(LayoutPage);

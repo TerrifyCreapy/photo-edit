@@ -7,20 +7,19 @@ import {
     Typography,
     IconButton,
     Button,
-    Link,
 } from "@mui/material";
 import { FC, useRef, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import ColorsSlider from "../components/ColorsSlider";
-import ImageCrop from "../components/ImageCrop";
-import ImgDialog from "../components/ImgDialog";
+import ColorsSlider from "../ColorsSlider";
+import ImageCrop from "../ImageCrop";
+import ImgDialog from "../ImgDialog";
 
-interface IImagePage {
+interface IImageEditor {
     file: File;
 }
 
-const ImagePage: FC<IImagePage> = ({ file }) => {
-    const canvasRef = useRef<HTMLCanvasElement>({} as HTMLCanvasElement);
+const ImageEditor: FC<IImageEditor> = ({ file }) => {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [params, setSearchParams] = useSearchParams({ brightness: "true" });
     const [brightness, setBrightness] = useState<number>(100);
     const [rgb, setRgb] = useState<any>({ r: 255, g: 255, b: 255 });
@@ -30,12 +29,12 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
     
 
     useEffect(() => {
-        if(canvasRef.current!==null && canvasRef.current.style) {
+        if(canvasRef!==null && canvasRef.current !== null) {
             canvasRef.current.style.display = "block";
             canvasRef.current.style.margin = "0 auto";
         }
         
-    }, [canvasRef.current]);
+    }, [canvasRef, canvasRef.current]);
 
 
     const [crop, setCrop] = useState({ x: 0, y: 0 })
@@ -46,31 +45,34 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
     }, [])
 
     useEffect(() => {
-        if (canvasRef.current!== null && canvasRef.current.getContext) {
+        if (canvasRef!== null && canvasRef.current !== null) {
             const context = canvasRef.current.getContext("2d");
             if (context) {
                 const image = new Image();
                 image.src = URL.createObjectURL(file);
                 image.onload = function (this) {
-                    canvasRef.current.width = image.width;
-                    canvasRef.current.height = image.height;
-                    context.filter = `brightness(${brightness}%)`;
-                    context.drawImage(image, 0, 0);
+                    if(canvasRef && canvasRef.current) {
+                        canvasRef.current.width = image.width;
+                        canvasRef.current.height = image.height;
+                        context.filter = `brightness(${brightness}%)`;
+                        context.drawImage(image, 0, 0);
 
-                    context.globalCompositeOperation = "multiply";
+                        context.globalCompositeOperation = "multiply";
 
-                    // Заливка холста желтым цветом
-                    context.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-                    context.fillRect(
-                        0,
-                        0,
-                        canvasRef.current.width,
-                        canvasRef.current.height,
-                    );
+                        // Заливка холста желтым цветом
+                        context.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+                        context.fillRect(
+                            0,
+                            0,
+                            canvasRef.current.width,
+                            canvasRef.current.height,
+                        );
+                    }
+                    
                 };
             }
         }
-    }, [brightness, rgb, canvasRef.current]);
+    }, [brightness, rgb, canvasRef, canvasRef.current, params]);
 
     const [opened, setOpened] = useState<boolean>(false);
 
@@ -141,11 +143,10 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
                             padding: 2,
                         }}
                     >
-                        {!params.get("crop") && <canvas
+                        {!params.get("crop") ? <canvas
                             style={{ maxWidth: "100%", maxHeight: "80%" }}
                             ref={canvasRef}
-                        ></canvas>}
-                        {params.get("crop") && <ImageCrop zoom={zoom} crop={crop} onCropComplete={onCropComplete} setCrop={setCrop} src={URL.createObjectURL(file)}/>}
+                        ></canvas> : <ImageCrop zoom={zoom} crop={crop} onCropComplete={onCropComplete} setCrop={setCrop} src={URL.createObjectURL(file)}/>}
                         {params.get("color") && (
                             <ColorsSlider
                                 rgb={rgb}
@@ -179,11 +180,11 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
                         
                     </Card>
                     {params.get("crop") && 
-                        <>
-                            <Slider min={1} max={20} value={zoom} onChange={(e: any) => setZoom(+e.target.value)}/>
+                        <Typography component="div" sx={{display: "flex", alignItems: "center", marginTop: 3}}>
+                            <Slider min={1} max={20} value={zoom} sx={{maxWidth: "50%"}} onChange={(e: any) => setZoom(+e.target.value)}/>
                             <Button onClick={onOpen}>Просмотреть изображение</Button>
                             {opened && <ImgDialog croppedAreaPixels={croppedAreaPixels} onClose={onClose} img={URL.createObjectURL(file)}/>}
-                        </>
+                        </Typography>
                         
                     }
                 </Grid>
@@ -191,4 +192,4 @@ const ImagePage: FC<IImagePage> = ({ file }) => {
         </>
     );
 };
-export default ImagePage;
+export default ImageEditor;
