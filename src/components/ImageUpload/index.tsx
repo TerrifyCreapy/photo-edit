@@ -2,11 +2,11 @@ import { FC, useId, useState, DragEvent } from "react";
 import { Card, FormGroup, Grid, Input, Typography } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 
-interface IMainPage {
+interface IImageUpload {
     setFile: (file: File) => void;
 }
 
-const MainPage: FC<IMainPage> = ({ setFile }) => {
+const ImageUpload: FC<IImageUpload> = ({ setFile }) => {
     const inputId = useId();
     const [drag, setDrag] = useState<boolean>(false);
 
@@ -30,6 +30,7 @@ const MainPage: FC<IMainPage> = ({ setFile }) => {
             !e.dataTransfer.files[0].type.startsWith("image")
         )
             return;
+        console.log(e.dataTransfer.files[0]);
         setDrag(false);
         setFile(e.dataTransfer.files[0]);
     }
@@ -91,4 +92,4 @@ const MainPage: FC<IMainPage> = ({ setFile }) => {
     );
 };
 
-export default MainPage;
+export default ImageUpload;
